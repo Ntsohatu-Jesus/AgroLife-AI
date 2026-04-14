@@ -1,30 +1,64 @@
-from app.services.weather_service import get_weather_data
-from app.services.health_service import get_health_advice
-from app.services.planner_service import generate_plan
 from app.services.llm_service import generate_response
+from app.services.weather_service import get_weather_data
+from app.services.rag_service import get_rag_context
+from app.services.health_service import get_health_advice
 
-def handle_query(query: str):
+memory = {}
+
+
+def run_agent(query: str, session_id: str = "default"):
     query_lower = query.lower()
+    previous = memory.get(session_id, "")
 
-    # 🌦 Weather
-    if "weather" in query_lower:
-        return get_weather_data("Bamenda")
+    # WEATHER
+    if "weather" in query_lower or "rain" in query_lower:
+        weather = get_weather_data("Bamenda")
 
-    # 🏥 Health
-    elif any(word in query_lower for word in ["snake", "cut", "burn", "fever"]):
+        prompt = f"""
+User question: {query}
+
+Weather data:
+{weather}
+
+Give practical farming advice based on this weather.
+"""
+        return generate_response(prompt)
+
+    # HEALTH
+    if "snake" in query_lower or "cut" in query_lower or "injury" in query_lower:
         return get_health_advice(query)
 
-    # 📅 Planner
-    elif any(word in query_lower for word in ["plan", "schedule", "farm", "study"]):
-        return generate_plan(query, "daily")
+    # FARMING → USE RAG
+    if any(word in query_lower for word in ["maize", "tomato", "farm", "crop", "plant"]):
+        rag_context = get_rag_context(query)
 
-    # 🤖 LLM handles everything else
-    else:
-        ai_response = generate_response(
-            f"You are AgroLife AI, an assistant for African farmers and communities. "
-            f"Give practical, simple advice.\n\nUser: {query}"
-        )
+        prompt = f"""
+You are an agricultural assistant for African farmers.
 
-        return {
-            "ai_response": ai_response
-        }
+Previous conversation:
+{previous}
+
+User question:
+{query}
+
+Relevant farming knowledge:
+{rag_context}
+
+Give detailed, practical, step-by-step advice that a local farmer can follow.
+"""
+
+        response = generate_response(prompt)
+        memory[session_id] = query
+        return response
+
+    # DEFAULT (GENERAL AI)
+    prompt = f"""
+Answer the question simply and clearly:
+
+{query}
+"""
+
+    response = generate_response(prompt)
+    memory[session_id] = query
+
+    return response

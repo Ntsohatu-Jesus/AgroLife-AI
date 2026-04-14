@@ -1,26 +1,26 @@
-import os
-from dotenv import load_dotenv
-import google.generativeai as genai
-
-# Load environment variables
-load_dotenv()
-
-# Configure API key
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# ✅ Use EXACT model format from test.py output
-MODEL_NAME = "models/gemini-flash-latest"
-
 def generate_response(prompt: str):
-    try:
-        model = genai.GenerativeModel(MODEL_NAME)
+    # TEMP MOCK RESPONSE (no API dependency)
 
-        response = model.generate_content(prompt)
+    if "maize" in prompt.lower():
+        return """To grow maize in dry season:
 
-        if hasattr(response, "text") and response.text:
-            return response.text
+1. Use early maturing seeds
+2. Water in morning or evening
+3. Apply manure to retain moisture
+4. Use mulch (grass/leaves)
+5. Space crops properly (75cm rows)
 
-        return "No response generated."
+This method is practical for farmers in dry regions of Africa.
+"""
 
-    except Exception as e:
-        return f"Error: {str(e)}"
+    if "tomato" in prompt.lower():
+        return """To grow tomatoes successfully:
+
+1. Use raised beds
+2. Water regularly but not too much
+3. Add compost or poultry manure
+4. Stake plants for support
+5. Watch for pests and remove affected leaves
+"""
+
+    return "General advice: ensure proper watering, good soil, and pest control."
