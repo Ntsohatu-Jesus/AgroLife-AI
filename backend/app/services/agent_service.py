@@ -8,10 +8,16 @@ memory = {}
 
 def run_agent(query: str, session_id: str = "default"):
     query_lower = query.lower()
-    previous = memory.get(session_id, "")
+
+    # Get conversation history
+    history = memory.get(session_id, [])
+    history_text = " ".join(history).lower()
+
+    # 🔥 COMBINE current query + history
+    combined_context = query_lower + " " + history_text
 
     # WEATHER
-    if "weather" in query_lower or "rain" in query_lower:
+    if "weather" in combined_context or "rain" in combined_context:
         weather = get_weather_data("Bamenda")
 
         prompt = f"""
@@ -20,45 +26,40 @@ User question: {query}
 Weather data:
 {weather}
 
-Give practical farming advice based on this weather.
+Give practical farming advice.
 """
-        return generate_response(prompt)
+        response = generate_response(prompt)
 
     # HEALTH
-    if "snake" in query_lower or "cut" in query_lower or "injury" in query_lower:
-        return get_health_advice(query)
+    elif any(word in combined_context for word in ["snake", "cut", "injury"]):
+        response = get_health_advice(query)
 
-    # FARMING → USE RAG
-    if any(word in query_lower for word in ["maize", "tomato", "farm", "crop", "plant"]):
+    # FARMING (NOW CONTEXT-AWARE ✅)
+    elif any(word in combined_context for word in ["maize", "tomato", "farm", "crop", "plant"]):
         rag_context = get_rag_context(query)
 
         prompt = f"""
 You are an agricultural assistant for African farmers.
 
-Previous conversation:
-{previous}
+Conversation history:
+{history}
 
 User question:
 {query}
 
-Relevant farming knowledge:
+Knowledge:
 {rag_context}
 
-Give detailed, practical, step-by-step advice that a local farmer can follow.
+Give detailed, step-by-step advice.
 """
-
         response = generate_response(prompt)
-        memory[session_id] = query
-        return response
 
-    # DEFAULT (GENERAL AI)
-    prompt = f"""
-Answer the question simply and clearly:
+    # DEFAULT
+    else:
+        response = "I currently focus on farming and basic health advice. Please ask about crops, weather, or farm-related issues."
 
-{query}
-"""
-
-    response = generate_response(prompt)
-    memory[session_id] = query
+    # SAVE MEMORY (last 3 messages)
+    history.append(query)
+    memory[session_id] = history[-3:]
 
     return response
