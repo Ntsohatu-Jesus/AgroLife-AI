@@ -1,53 +1,48 @@
+import os
+import requests
+
+API_KEY = os.getenv("GEMINI_API_KEY")
+
 def generate_response(prompt: str):
-    prompt_lower = prompt.lower()
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 
-    # 🌽 MAIZE + WATERING
-    if "maize" in prompt_lower and "water" in prompt_lower:
-        return """For maize watering in dry season:
+        headers = {
+            "Content-Type": "application/json"
+        }
 
-- Water 2–3 times per week depending on heat
-- Water early morning (6–8am) or evening (5–7pm)
-- Avoid watering under strong sun
-- Use mulch (grass/leaves) to retain moisture
-- Young maize needs more frequent watering
+        data = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"""
+You are AgroLife AI.
 
-This helps maintain soil moisture in dry African conditions.
-"""
+You MUST give practical, detailed, step-by-step farming advice suitable for African farmers.
 
-    # 🌽 GENERAL MAIZE FARMING
-    elif "maize" in prompt_lower:
-        return """To grow maize in dry season:
+Be SPECIFIC to the crop mentioned.
 
-1. Use early maturing seeds
-2. Plant when soil still has moisture
-3. Apply manure or compost
-4. Use mulch to reduce water loss
-5. Space crops properly (75cm rows)
+DO NOT give generic answers.
 
-This method is practical for farmers in dry regions of Africa.
-"""
+Question:
+{prompt}
+"""}
+                    ]
+                }
+            ]
+        }
 
-    # 🍅 TOMATO
-    elif "tomato" in prompt_lower:
-        return """To grow tomatoes successfully:
+        response = requests.post(url, headers=headers, json=data)
 
-- Use raised beds
-- Water regularly but not excessively
-- Add compost or poultry manure
-- Stake plants for support
-- Remove infected leaves early
-"""
+        result = response.json()
 
-    # 🌧 WEATHER
-    elif "rain" in prompt_lower or "weather" in prompt_lower:
-        return """Rainfall affects farming by:
+        print("DEBUG GEMINI:", result)  # 🔥 VERY IMPORTANT
 
-- Improving soil moisture
-- Supporting crop growth
-- But too much rain can cause flooding
+        if "candidates" in result:
+            return result["candidates"][0]["content"]["parts"][0]["text"]
 
-Farmers should adjust planting based on rainfall patterns.
-"""
+        return None
 
-    # ❌ DEFAULT
-    return "I currently focus on farming and basic health advice. Please ask about crops, weather, or farm-related issues."
+    except Exception as e:
+        print("LLM ERROR:", e)
+        return None

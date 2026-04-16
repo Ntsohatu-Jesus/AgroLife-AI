@@ -1,33 +1,33 @@
 import requests
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 API_KEY = os.getenv("WEATHER_API_KEY")
 
-def get_weather_data(location: str):
-    if not API_KEY:
-        return {"error": "API key not found"}
-
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={API_KEY}&units=metric"
+def get_weather_data(city="Bamenda"):
 
     try:
-        response = requests.get(url)
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+        response = requests.get(url).json()
 
-        if response.status_code != 200:
-            return {"error": "Could not fetch weather data"}
+        temp = response["main"]["temp"]
+        desc = response["weather"][0]["description"]
 
-        data = response.json()
+        advice = ""
 
-        return {
-            "location": location,
-            "temperature": data["main"]["temp"],
-            "description": data["weather"][0]["description"]
-        }
+        if "rain" in desc:
+            advice = "It may rain. Consider postponing farm activities."
+        elif "clear" in desc or "sun" in desc:
+            advice = "Weather is good for farming activities."
+        else:
+            advice = "Weather is moderate. You can proceed with caution."
 
-    except Exception as e:
-        return {"error": str(e)}
+        return f"""Weather Report for {city}:
 
-print("API KEY:", API_KEY)
+Temperature: {temp}°C
+Condition: {desc}
+
+Advice: {advice}
+"""
+
+    except:
+        return "Unable to fetch weather data at the moment."

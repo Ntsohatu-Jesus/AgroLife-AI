@@ -1,64 +1,31 @@
-def get_health_advice(symptom: str):
-    symptom = symptom.lower()
+def get_health_advice(query: str):
 
-    # 🐍 Snake bite
-    if "snake" in symptom:
-        return {
-            "condition": "Snake Bite",
-            "advice": [
-                "Stay calm and reduce movement to slow the spread of venom",
-                "Do NOT cut the wound or try to suck out venom",
-                "Remove tight clothing or jewelry near the bite area",
-                "Keep the bitten area below heart level",
-                "Immobilize the limb using cloth or stick if possible",
-                "Go to the nearest hospital or health center immediately"
-            ],
-            "note": "Traditional remedies may delay proper treatment. Seek medical care urgently."
-        }
+    query = query.lower()
 
-    # 🔪 Cuts / wounds
-    elif "cut" in symptom or "bleeding" in symptom:
-        return {
-            "condition": "Cut / Bleeding",
-            "advice": [
-                "Wash hands if possible",
-                "Clean the wound with clean water",
-                "Apply direct pressure with clean cloth to stop bleeding",
-                "If available, apply antiseptic",
-                "Cover with clean bandage or cloth",
-                "Seek medical help if bleeding does not stop"
-            ]
-        }
+    if "cut" in query or "bleeding" in query or "pierce" in query:
 
-    # 🔥 Burns
-    elif "burn" in symptom:
-        return {
-            "condition": "Burn",
-            "advice": [
-                "Cool the burn with clean running water for at least 10 minutes",
-                "Do NOT apply oil, toothpaste, or raw substances",
-                "Cover with clean, non-stick cloth",
-                "Avoid breaking blisters",
-                "Seek medical help for severe burns"
-            ]
-        }
+        return """First Aid for a Cut or Injury:
 
-    # 🤒 Fever
-    elif "fever" in symptom:
-        return {
-            "condition": "Fever",
-            "advice": [
-                "Drink plenty of clean water",
-                "Rest well",
-                "Use paracetamol if available",
-                "Monitor temperature regularly",
-                "Seek medical help if fever persists more than 2 days"
-            ]
-        }
+1. Wash your hands if possible
+2. Clean the wound with clean water
+3. Apply pressure with a clean cloth to stop bleeding
+4. Apply antiseptic if available
+5. Cover with a clean bandage or cloth
 
-    # 🩹 General fallback
-    else:
-        return {
-            "message": "Sorry, I can only give basic first-aid advice for now.",
-            "suggestion": "Try describing symptoms like 'cut', 'burn', 'snake bite', or 'fever'"
-        }
+Seek medical help if bleeding continues or signs of infection appear.
+"""
+
+    if "snake" in query or "bite" in query:
+
+        return """Snake Bite First Aid:
+
+1. Stay calm and reduce movement
+2. Keep the affected area still
+3. Do NOT cut or suck the wound
+4. Remove tight clothing or jewelry
+5. Seek medical help immediately
+
+Avoid using traditional methods that may worsen the condition.
+"""
+
+    return "Please describe the injury clearly (e.g., cut, burn, snake bite)."
